@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: laravel-app
+    container_name: laravel_app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel
+    depends_on:
+      - sqlite
+      - webserver
+
+  webserver:
+    image: nginx:latest
+    container_name: nginx_web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/snippets:/etc/nginx/snippets
+    networks:
+      - laravel
+
+  sqlite:
+    image: nouchka/sqlite3
+    container_name: sqlite_db
+    volumes:
+      - ./database:/var/www/db
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
